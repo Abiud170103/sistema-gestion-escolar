@@ -1,0 +1,39 @@
+{
+  "name": "sistema-escolar-backend",
+  "version": "2.0.0",
+  "description": "Backend para sistema de gestión escolar modernizado con autenticación avanzada y notificaciones por email",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "migrate": "node run-migration.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "escolar",
+    "gestión",
+    "nodejs",
+    "express",
+    "postgresql",
+    "jwt",
+    "email"
+  ],
+  "author": "Tu Nombre <tu.email@ejemplo.com>",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.10.0",
+    "bcryptjs": "^3.0.2",
+    "colors": "^1.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.14.1",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^7.0.3",
+    "pg": "^8.16.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

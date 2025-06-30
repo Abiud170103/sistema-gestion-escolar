@@ -1,0 +1,49 @@
+.modal-bg {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #2f415688;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-form {
+  background: var(--color-blanco);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px #2f415633;
+  padding: 32px 24px 24px 24px;
+  min-width: 320px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modal-form h3 {
+  color: var(--color-primario);
+  margin-bottom: 18px;
+}
+
+.modal-form .form-group {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.modal-form label {
+  color: var(--color-primario);
+  font-weight: 500;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.modal-form input,
+.modal-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.modal-form button {
+  width: 100%;
+  margin-top: 8px;
+}

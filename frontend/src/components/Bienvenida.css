@@ -1,0 +1,108 @@
+.bienvenida-bg {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 50%, #80deea 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: background 0.3s ease;
+}
+
+/* Dark mode styles for bienvenida */
+[data-theme="dark"] .bienvenida-bg {
+  background: linear-gradient(135deg, #1a202c 0%, #2d3748 50%, #4a5568 100%);
+}
+
+[data-theme="dark"] .bienvenida-container {
+  background: #2d3748;
+  color: #e2e8f0;
+  border: 1px solid #4a5568;
+}
+
+[data-theme="dark"] .bienvenida-titulo {
+  color: #63b3ed;
+}
+
+[data-theme="dark"] .bienvenida-mensaje {
+  color: #cbd5e0;
+}
+
+[data-theme="dark"] .bienvenida-boton {
+  background: #3182ce;
+  border-color: #3182ce;
+}
+
+[data-theme="dark"] .bienvenida-boton:hover {
+  background: #2c78c2;
+  border-color: #2c78c2;
+}
+
+[data-theme="dark"] .bienvenida-footer {
+  color: #a0aec0;
+}
+
+.bienvenida-container {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  padding: 48px 32px 32px 32px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.bienvenida-logo {
+  width: 80px;
+  margin-bottom: 16px;
+}
+
+.bienvenida-titulo {
+  color: #00838f;
+  font-size: 2rem;
+  margin-bottom: 12px;
+  font-family: 'Montserrat', 'Lato', Arial, sans-serif;
+}
+
+.bienvenida-mensaje {
+  color: #333;
+  font-size: 1.1rem;
+  margin-bottom: 32px;
+}
+
+.bienvenida-boton {
+  background: #00838f;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 32px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: background 0.2s, transform 0.2s;
+}
+.bienvenida-boton:hover {
+  background: #00acc1;
+  transform: scale(1.04);
+}
+
+.bienvenida-footer {
+  margin-top: 32px;
+  color: #888;
+  font-size: 0.95rem;
+}
+
+/* Theme toggle positioning for bienvenida page */
+.theme-toggle-bienvenida {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+@media (max-width: 768px) {
+  .theme-toggle-bienvenida {
+    top: 16px;
+    right: 16px;
+  }
+}

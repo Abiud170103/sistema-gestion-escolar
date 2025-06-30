@@ -1,0 +1,121 @@
+/* Paleta de colores institucional */
+:root {
+  --color-primario: #2F4156;
+  --color-secundario: #567C8D;
+  --color-fondo: #F5EFEB;
+  --color-claro: #C8D9E6;
+  --color-blanco: #FFFFFF;
+  --color-texto: #2F4156;
+  --color-exito: #4caf50;
+  --color-error: #c62828;
+}
+
+body {
+  font-family: 'Roboto', 'Open Sans', Arial, sans-serif;
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  margin: 0;
+}
+
+nav, .navbar {
+  background: var(--color-primario);
+  color: var(--color-blanco);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+nav a, .navbar a {
+  color: var(--color-blanco);
+  margin-left: 20px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+nav a:hover, .navbar a:hover {
+  color: var(--color-claro);
+}
+
+button {
+  background: var(--color-secundario);
+  color: var(--color-blanco);
+  border: none;
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin: 2px;
+  transition: background 0.2s;
+}
+button:hover {
+  background: var(--color-primario);
+}
+button[disabled] {
+  background: #ccc;
+  color: #888;
+  cursor: not-allowed;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-blanco);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+th, td {
+  padding: 12px 10px;
+  text-align: left;
+}
+th {
+  background: var(--color-claro);
+  color: var(--color-primario);
+}
+tr:nth-child(even) {
+  background: var(--color-fondo);
+}
+tr:hover {
+  background: var(--color-claro);
+}
+
+input, select, textarea {
+  border: 1.5px solid var(--color-claro);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 1rem;
+  margin: 4px 0 12px 0;
+  outline: none;
+  background: var(--color-blanco);
+  transition: border 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+  border: 2px solid var(--color-secundario);
+}
+
+h1, h2, h3 {
+  color: var(--color-primario);
+  font-family: 'Roboto', 'Open Sans', Arial, sans-serif;
+}
+
+/* Feedback visual */
+.success {
+  color: var(--color-exito);
+}
+.error {
+  color: var(--color-error);
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+  th, td {
+    padding: 10px 5px;
+  }
+  nav, .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
