@@ -39,6 +39,9 @@ router.get('/:id', checkRole(['admin', 'estudiante', 'docente', 'padre']), async
 
 // Endpoint para crear un nuevo usuario
 router.post('/', async (req, res) => {
+  console.log('=== NUEVO REGISTRO DE USUARIO ===');
+  console.log('Body recibido:', JSON.stringify(req.body, null, 2));
+  
   let { 
     nombre, 
     usuario, 
@@ -118,9 +121,25 @@ router.post('/', async (req, res) => {
     }
     
     // Validar unicidad de correo o usuario
-    const existe = await db.query('SELECT 1 FROM usuario WHERE correo = $1 OR usuario = $2', [correo, usuario]);
+    console.log('=== DEBUG 409 ERROR ===');
+    console.log('Checking uniqueness for:', { correo, usuario });
+    
+    const existe = await db.query('SELECT correo, usuario FROM usuario WHERE correo = $1 OR usuario = $2', [correo, usuario]);
+    console.log('Found conflicts:', existe.rows);
+    
     if (existe.rows.length > 0) {
-      return res.status(409).json({ error: 'El correo o usuario ya está registrado' });
+      const conflicts = existe.rows.map(row => {
+        const conflicts = [];
+        if (row.correo === correo) conflicts.push('correo');
+        if (row.usuario === usuario) conflicts.push('usuario');
+        return `${conflicts.join(' y ')} duplicado: ${row.correo}/${row.usuario}`;
+      });
+      
+      console.log('Conflict details:', conflicts);
+      return res.status(409).json({ 
+        error: 'El correo o usuario ya está registrado',
+        detalles: conflicts
+      });
     }
     // Guardar contrasena en texto plano (solo para pruebas)
     const result = await db.query(
