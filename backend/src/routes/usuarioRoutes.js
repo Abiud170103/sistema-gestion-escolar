@@ -39,16 +39,84 @@ router.get('/:id', checkRole(['admin', 'estudiante', 'docente', 'padre']), async
 
 // Endpoint para crear un nuevo usuario
 router.post('/', async (req, res) => {
-  const { nombre, usuario, correo, contrasena, rol } = req.body;
-  if (!nombre || !usuario || !correo || !contrasena || !rol) {
+  let { 
+    nombre, 
+    usuario, 
+    correo, 
+    contrasena, 
+    password, // Frontend puede enviar password en lugar de contrasena
+    rol,
+    // Campos adicionales para estudiantes
+    apellido_paterno,
+    apellido_materno,
+    fecha_nacimiento,
+    grado,
+    grupo,
+    telefono,
+    direccion
+  } = req.body;
+  
+  // Usar password si contrasena no está presente
+  const passwordFinal = contrasena || password;
+  
+  if (!nombre || !correo || !passwordFinal || !rol) {
     return res.status(400).json({ error: 'Faltan datos requeridos' });
   }
-  // Validar formato de correo
-  const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
-  if (!emailRegex.test(correo)) {
-    return res.status(400).json({ error: 'Correo electrónico no válido' });
+  
+  // Validaciones específicas por rol
+  if (rol === 'estudiante') {
+    // Validar formato de matrícula: C + 13 dígitos
+    if (req.body.matricula && !/^C\d{13}$/.test(req.body.matricula)) {
+      return res.status(400).json({ 
+        error: 'Formato de matrícula inválido. Debe ser: C seguido de 13 dígitos (ej: C1234567890123)' 
+      });
+    }
+    
+    // Validar que grupo sea 1 o 2 (solo 2 grupos por año)
+    if (req.body.grupo && !['1', '2'].includes(req.body.grupo)) {
+      return res.status(400).json({ 
+        error: 'Grupo inválido. Solo se permiten grupos 1 y 2' 
+      });
+    }
+    
+    // Validar que año sea 1, 2 o 3 (secundaria)
+    if (req.body.anio && !['1', '2', '3'].includes(req.body.anio)) {
+      return res.status(400).json({ 
+        error: 'Año escolar inválido. Solo se permiten años 1, 2 y 3' 
+      });
+    }
   }
+  
   try {
+    // Generar usuario automáticamente si está vacío
+    if (!usuario || usuario.trim() === '') {
+      const baseUsuario = nombre.toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-z0-9_]/g, '')
+        .substring(0, 20);
+      
+      // Verificar si el usuario base existe y generar variante si es necesario
+      let usuarioFinal = baseUsuario;
+      let contador = 1;
+      
+      while (true) {
+        const existe = await db.query('SELECT 1 FROM usuario WHERE usuario = $1', [usuarioFinal]);
+        if (existe.rows.length === 0) break;
+        usuarioFinal = `${baseUsuario}_${contador}`;
+        contador++;
+        if (contador > 100) break; // Prevenir bucle infinito
+      }
+      
+      usuario = usuarioFinal;
+      console.log(`Usuario generado automáticamente: ${usuario}`);
+    }
+    
+    // Validar formato de correo
+    const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    if (!emailRegex.test(correo)) {
+      return res.status(400).json({ error: 'Correo electrónico no válido' });
+    }
+    
     // Validar unicidad de correo o usuario
     const existe = await db.query('SELECT 1 FROM usuario WHERE correo = $1 OR usuario = $2', [correo, usuario]);
     if (existe.rows.length > 0) {
@@ -57,9 +125,49 @@ router.post('/', async (req, res) => {
     // Guardar contrasena en texto plano (solo para pruebas)
     const result = await db.query(
       'INSERT INTO usuario (nombre, usuario, correo, contrasena, rol) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [nombre, usuario, correo, contrasena, rol]
+      [nombre, usuario, correo, passwordFinal, rol]
     );
-    res.status(201).json(result.rows[0]);
+    
+    const nuevoUsuario = result.rows[0];
+    
+    // Si es estudiante, insertar también en tabla estudiante
+    if (rol === 'estudiante') {
+      const { matricula, grupo, anio } = req.body;
+      
+      // Buscar o crear grupo
+      let grupoId = null;
+      if (grupo && anio) {
+        // Formato de turno: "Grupo {numero} - {año}° año"
+        const turnoDescripcion = `Grupo ${grupo} - ${anio}° año`;
+        
+        // Buscar grupo existente
+        const grupoExistente = await db.query(
+          'SELECT id_grupo FROM grupo WHERE anio = $1 AND turno = $2',
+          [parseInt(anio), turnoDescripcion]
+        );
+        
+        if (grupoExistente.rows.length > 0) {
+          grupoId = grupoExistente.rows[0].id_grupo;
+        } else {
+          // Crear nuevo grupo
+          const nuevoGrupo = await db.query(
+            'INSERT INTO grupo (anio, turno) VALUES ($1, $2) RETURNING id_grupo',
+            [parseInt(anio), turnoDescripcion]
+          );
+          grupoId = nuevoGrupo.rows[0].id_grupo;
+        }
+      }
+      
+      // Insertar en tabla estudiante
+      if (matricula) {
+        await db.query(
+          'INSERT INTO estudiante (id_usuario, matricula, grupo_id) VALUES ($1, $2, $3)',
+          [nuevoUsuario.id_usuario, matricula, grupoId]
+        );
+      }
+    }
+    
+    res.status(201).json(nuevoUsuario);
   } catch (error) {
     res.status(500).json({ error: 'Error al crear usuario', detalle: error.message });
   }
@@ -358,6 +466,23 @@ router.post('/cambiar-password-temporal', auth, async (req, res) => {
   } catch (error) {
     console.error('❌ Error al cambiar contraseña temporal:', error);
     res.status(500).json({ error: 'Error al cambiar contraseña', detalle: error.message });
+  }
+});
+
+// Endpoint para verificar si un correo ya está registrado
+router.get('/check-email/:email', async (req, res) => {
+  const { email } = req.params;
+  
+  try {
+    const result = await db.query('SELECT 1 FROM usuario WHERE correo = $1', [email]);
+    const disponible = result.rows.length === 0;
+    
+    res.json({ 
+      disponible, 
+      mensaje: disponible ? 'Correo disponible' : 'Correo ya registrado' 
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al verificar correo', detalle: error.message });
   }
 });
 

@@ -108,7 +108,33 @@ function UsuariosList() {
           }
         } else {
           // Para otros roles, usar el endpoint normal
-          await apiRequest('/usuarios', { method: 'POST', body: JSON.stringify(form) });
+          // Crear payload limpio solo con los campos necesarios
+          const payload = {
+            nombre: form.nombre,
+            usuario: form.usuario,
+            correo: form.correo,
+            contrasena: form.contrasena,
+            rol: form.rol
+          };
+          
+          // Agregar campos específicos por rol
+          if (form.rol === 'estudiante') {
+            payload.grupo = form.grupo;
+            payload.anio = form.anio;
+            payload.matricula = form.matricula;
+            
+            // Validar formato de matrícula para estudiantes: C + 13 dígitos
+            if (payload.matricula && !/^C\d{13}$/.test(payload.matricula)) {
+              throw new Error('Formato de matrícula inválido. Debe ser: C seguido de 13 dígitos (ej: C1234567890123)');
+            }
+          }
+          
+          if (form.rol === 'docente') {
+            payload.tipo_docente = form.tipo_docente;
+          }
+          
+          console.log('Enviando payload limpio:', payload);
+          await apiRequest('/usuarios', { method: 'POST', body: JSON.stringify(payload) });
           setSuccess('Usuario creado correctamente.');
         }
       }
@@ -169,7 +195,18 @@ function UsuariosList() {
           </div>
           <div className="form-group">
             <label>Matrícula</label>
-            <input name="matricula" value={form.matricula} onChange={handleChange} />
+            <input 
+              name="matricula" 
+              value={form.matricula} 
+              onChange={handleChange}
+              placeholder="C1234567890123"
+              pattern="^C\d{13}$"
+              title="Formato: C seguido de 13 dígitos (ej: C1234567890123)"
+              required
+            />
+            <small style={{color: '#666', fontSize: '12px'}}>
+              Formato: C + 13 dígitos (ej: C1234567890123)
+            </small>
           </div>
         </>
       );
