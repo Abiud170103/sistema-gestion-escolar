@@ -74,10 +74,23 @@ router.delete('/:id', async (req, res) => {
     if (estudiante.rows.length > 0) {
       return res.status(409).json({ error: 'No se puede eliminar el usuario: está registrado como estudiante.' });
     }
+    
+    // Verificar dependencias en docente (horarios asignados)
+    const docente = await db.query('SELECT 1 FROM docente WHERE id_usuario = $1', [id]);
+    if (docente.rows.length > 0) {
+      const horarioDocente = await db.query('SELECT 1 FROM horario WHERE docente_id = $1', [id]);
+      if (horarioDocente.rows.length > 0) {
+        return res.status(409).json({ error: 'No se puede eliminar el usuario: es docente con horarios asignados.' });
+      }
+    }
     // Verificar dependencias en padre/tutor
     const padre = await db.query('SELECT 1 FROM padre WHERE id_usuario = $1', [id]);
     if (padre.rows.length > 0) {
-      return res.status(409).json({ error: 'No se puede eliminar el usuario: está registrado como padre/tutor.' });
+      // Verificar si tiene estudiantes asignados
+      const padreEstudiante = await db.query('SELECT 1 FROM padre_estudiante WHERE padre_id = $1', [id]);
+      if (padreEstudiante.rows.length > 0) {
+        return res.status(409).json({ error: 'No se puede eliminar el usuario: es padre/tutor de estudiantes registrados.' });
+      }
     }
     // Verificar dependencias en asistencias
     const asistencia = await db.query('SELECT 1 FROM asistencia WHERE usuario_id = $1', [id]);
@@ -85,7 +98,7 @@ router.delete('/:id', async (req, res) => {
       return res.status(409).json({ error: 'No se puede eliminar el usuario: tiene asistencias registradas.' });
     }
     // Verificar dependencias en incidencias (como reportante o involucrado)
-    const incidencia = await db.query('SELECT 1 FROM incidencia WHERE estudiante_id = $1', [id]);
+    const incidencia = await db.query('SELECT 1 FROM incidencia WHERE usuario_id = $1', [id]);
     if (incidencia.rows.length > 0) {
       return res.status(409).json({ error: 'No se puede eliminar el usuario: tiene incidencias registradas.' });
     }
